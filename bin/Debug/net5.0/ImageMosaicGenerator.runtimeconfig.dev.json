@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "/home/nevenit/.dotnet/store/|arch|/|tfm|",
+      "/home/nevenit/.nuget/packages"
+    ]
+  }
+}

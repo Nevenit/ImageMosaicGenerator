@@ -1,0 +1,16 @@
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator.deps.json
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator.runtimeconfig.json
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator.runtimeconfig.dev.json
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ref/ImageMosaicGenerator.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/ImageMosaicGenerator.pdb
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.csproj.AssemblyReference.cache
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.GeneratedMSBuildEditorConfig.editorconfig
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.AssemblyInfoInputs.cache
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.AssemblyInfo.cs
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.csproj.CoreCompileInputs.cache
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ref/ImageMosaicGenerator.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.pdb
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.genruntimeconfig.cache
