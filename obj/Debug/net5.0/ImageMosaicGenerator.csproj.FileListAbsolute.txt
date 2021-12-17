@@ -14,3 +14,5 @@
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ref/ImageMosaicGenerator.dll
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.pdb
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.genruntimeconfig.cache
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/CommandLine.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.csproj.CopyComplete
