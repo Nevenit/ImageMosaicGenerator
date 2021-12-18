@@ -46,9 +46,9 @@ namespace ImageMosaicGenerator
             
             var ext = new List<string> { ".jpg", ".png" };
             string[] tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
-            
-        }
 
-        
+            SharedArray sharedArray = new SharedArray(tileImages);
+
+        }
     }
 }
