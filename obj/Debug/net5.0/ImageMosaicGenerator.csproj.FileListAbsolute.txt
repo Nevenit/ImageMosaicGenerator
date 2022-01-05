@@ -16,3 +16,10 @@
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.genruntimeconfig.cache
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/CommandLine.dll
 /home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/obj/Debug/net5.0/ImageMosaicGenerator.csproj.CopyComplete
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/Blurhash.Core.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/Blurhash.System.Drawing.Common.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/Microsoft.Win32.SystemEvents.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/System.Drawing.Common.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/runtimes/unix/lib/netcoreapp3.0/System.Drawing.Common.dll
+/home/nevenit/Documents/Programming/c#/ImageMosaicGenerator/bin/Debug/net5.0/runtimes/win/lib/netcoreapp3.0/System.Drawing.Common.dll

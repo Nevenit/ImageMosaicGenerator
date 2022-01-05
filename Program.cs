@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 
 namespace ImageMosaicGenerator
@@ -43,12 +48,16 @@ namespace ImageMosaicGenerator
             int index = 0;
             while (true)
             {
-                string temp = sharedArray.GetNext(out index);
+                string pathToImage = sharedArray.GetNext(out index);
                 
                 if (index == -1)
                     break;
-                
-                storage.ImagePaths2[index] = temp;
+
+                using (Bitmap bm = new Bitmap(pathToImage))
+                {
+                    Color imgCol = ImageProcessing.AverageImageColor(bm);
+                }
+                Console.WriteLine(index);
             }
         }
 
