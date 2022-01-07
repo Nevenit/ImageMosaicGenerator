@@ -126,11 +126,18 @@ namespace ImageMosaicGenerator
 
             return Color.FromArgb(sR, sG, sB);
         }
-        /*
+        
         public double[] RGBtoCIELAB(Color color)
         {
-            
+            double[] XYZ = RGBtoXYZ(color);
+            return XYZtoCIELab(XYZ);
         }
-        */
+
+        public Color CIELABtoRGB(double[] CIELAB)
+        {
+            double[] XYZ = CIELABtoXYZ(CIELAB);
+            return XYZtoRGB(XYZ);
+        }
+        
     }
 }
