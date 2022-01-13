@@ -73,6 +73,9 @@ namespace ImageMosaicGenerator
             int avgG = (int)(totals[1] / (width*height));
             int avgR = (int)(totals[2] / (width*height));
             
+            img.UnlockBits(srcData);
+            img.Dispose();
+            
             return Color.FromArgb(avgR, avgG, avgB);
         }
     }

@@ -3,10 +3,10 @@ using System.Drawing;
 
 namespace ImageMosaicGenerator
 {
-    public class ColorConversion
+    public static class ColorConversion
     {
         // All of these conversions are from https://www.easyrgb.com/en/math.php
-        public double[] RGBtoXYZ(Color color)
+        public static double[] RGBtoXYZ(Color color)
         {
             double varR = color.R / 255.0;
             double varG = color.G / 255.0;
@@ -38,7 +38,7 @@ namespace ImageMosaicGenerator
             return new double[] { X, Y, Z};
         }
 
-        public double[] XYZtoCIELab(double[] XYZ)
+        public static double[] XYZtoCIELab(double[] XYZ)
         {
             double varX = XYZ[0] / 100.0;
             double varY = XYZ[1] / 100.0;
@@ -66,7 +66,7 @@ namespace ImageMosaicGenerator
             return new double[] {CIEL, CIEA, CIEB};
         }
 
-        public double[] CIELABtoXYZ(double[] CIELAB)
+        public static double[] CIELABtoXYZ(double[] CIELAB)
         {
             double varY = (CIELAB[0] + 16) / 116;
             double varX = CIELAB[1] / 500 + varY;
@@ -94,7 +94,7 @@ namespace ImageMosaicGenerator
             return new double[] {X, Y, Z};
         }
 
-        public Color XYZtoRGB(double[] XYZ)
+        public static Color XYZtoRGB(double[] XYZ)
         {
             double varX = XYZ[0] / 100;
             double varY = XYZ[1] / 100;
@@ -127,13 +127,13 @@ namespace ImageMosaicGenerator
             return Color.FromArgb(sR, sG, sB);
         }
         
-        public double[] RGBtoCIELAB(Color color)
+        public static double[] RGBtoCIELAB(Color color)
         {
             double[] XYZ = RGBtoXYZ(color);
             return XYZtoCIELab(XYZ);
         }
 
-        public Color CIELABtoRGB(double[] CIELAB)
+        public static Color CIELABtoRGB(double[] CIELAB)
         {
             double[] XYZ = CIELABtoXYZ(CIELAB);
             return XYZtoRGB(XYZ);
