@@ -40,9 +40,9 @@ namespace ImageMosaicGenerator
 
         public static double[] XYZtoCIELab(double[] XYZ)
         {
-            double varX = XYZ[0] / 100.0;
+            double varX = XYZ[0] / 95.047;
             double varY = XYZ[1] / 100.0;
-            double varZ = XYZ[2] / 100.0;
+            double varZ = XYZ[2] / 108.883;
 
             if (varX > 0.008856)
                 varX = Math.Pow(varX, 1.0 / 3.0);
@@ -87,9 +87,9 @@ namespace ImageMosaicGenerator
             else
                 varZ = (varZ - 16.0 / 116.0) / 7.787;
 
-            double X = varX * 100.0;
+            double X = varX * 95.047;
             double Y = varY * 100.0;
-            double Z = varZ * 100.0;
+            double Z = varZ * 108.883;
 
             return new double[] {X, Y, Z};
         }
