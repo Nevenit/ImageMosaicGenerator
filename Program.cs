@@ -74,7 +74,7 @@ namespace ImageMosaicGenerator
             
             Thread[] threadList = new Thread[threadCount];
             
-            // Start the threads
+            // Start the threads to process images
             for (int i = 0; i < threadCount; i++)
             {
                 int temp = i;
@@ -87,6 +87,9 @@ namespace ImageMosaicGenerator
             
         }
 
+        /*
+         * This function shows the user how to use the program
+         */
         static void ShowHelp(OptionSet p)
         {
             Console.WriteLine ("Usage: dotnet ImageMosaicGenerator.dll [OPTIONS]");
@@ -96,6 +99,9 @@ namespace ImageMosaicGenerator
             p.WriteOptionDescriptions (Console.Out);
         }
 
+        /*
+         * This function goes through all of the images and calculates their averago color
+         */
         static void ProcessImages(int threadId, SharedIncrementalArray sharedArray, ThreadedStorage storage)
         {
             int index = 0;
@@ -117,12 +123,14 @@ namespace ImageMosaicGenerator
                     // Lock the array and save the result
                     lock (storage.ImageColors)
                     {
+                        // Save the color in a shared array
                         storage.ImageColors[index] = imgCol;
                     }
                 }
             }
         }
 
+        // This function simply waits until all threads have ended their task
         static void WaitForThreadsToFinish(Thread[] threadList)
         {
             while (true)
