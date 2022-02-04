@@ -1,0 +1,8 @@
+/ImageMosaicGenerator.sln
+/bin/**
+/obj/**
+/ImageMosaicGenerator.csproj
+/.gitignore
+/.git
+/.idea
+/.vs

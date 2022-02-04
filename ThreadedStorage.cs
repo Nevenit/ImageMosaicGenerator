@@ -1,14 +1,34 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
+
 namespace ImageMosaicGenerator
 {
     public class ThreadedStorage
     {
-        public string[] ImagePaths;
-        public double[][] ImageColors;
+        // This stores the paths to all tile images
+        private string[] ImagePaths;
         
-        public ThreadedStorage(string[] imagePaths)
+        // This stores the ImagePaths as a queue used for multi threading
+        public readonly Queue<string> ImagePathsQueue;
+        
+        // This stores both the path to the tile images and its colors
+        public List<ImagePathColor> TilesColors = new List<ImagePathColor>();
+        
+        //This just stores the image
+        private Bitmap Image;
+        
+        // This stores the Image as a color array in a queue used for multi threading
+        private Queue<Color> ImageColorQueue;
+
+        public ThreadedStorage(string[] imagePaths, Bitmap image)
         {
             ImagePaths = imagePaths;
-            ImageColors = new double[imagePaths.Length][];
+            ImagePathsQueue = new Queue<string>(ImagePaths);
+            Image = image;
+            ImageColorQueue = new Queue<Color>(Misc.BitmapToColorList(image));
         }
+
     }
 }

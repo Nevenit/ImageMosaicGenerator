@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -12,15 +13,15 @@ using NDesk.Options;
 
 namespace ImageMosaicGenerator
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             // Define variables for arguments
-            bool showHelp = false;
-            string imagePath = "";
-            string tilesPath = "";
-            int threadCount = 0;
+            var showHelp = false;
+            var imagePath = "";
+            var tilesPath = "";
+            var threadCount = 0;
             
             
             // Define arguments
@@ -66,31 +67,47 @@ namespace ImageMosaicGenerator
             
             // Find all image files 
             var ext = new List<string> { ".jpg", ".png" };
-            string[] tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
+            var tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
+            var image = new Bitmap(imagePath);
 
             // Define arrays objects to be shared between classes
-            SharedIncrementalArray sharedArray = new SharedIncrementalArray(tileImages);
-            ThreadedStorage storage = new ThreadedStorage(tileImages);
+            var storage = new ThreadedStorage(tileImages, image);
             
-            Thread[] threadList = new Thread[threadCount];
+            var threadList = new Thread[threadCount];
             
             // Start the threads to process images
-            for (int i = 0; i < threadCount; i++)
+            // This calculates the average color foe each pixel
+            for (var i = 0; i < threadCount; i++)
             {
-                int temp = i;
-                threadList[i] = new Thread(() => ProcessImages(temp, sharedArray, storage));
+                threadList[i] = new Thread(() => ProcessTileImages(storage));
                 threadList[i].Start();
             }
 
             // Wait for the threads to finish
             WaitForThreadsToFinish(threadList);
             
+            // override the old thread array with an empty one
+            threadList = new Thread[threadCount];
+            
+            // Start the threads to process the image
+            // This picks the image for each pixel of the image
+            for (var i = 0; i < threadCount; i++)
+            {
+                threadList[i] = new Thread(() => ProcessImage(storage));
+                threadList[i].Start();
+            }
+
+            // Wait for the threads to finish
+            WaitForThreadsToFinish(threadList);
+            
+            
+            
         }
 
         /*
          * This function shows the user how to use the program
          */
-        static void ShowHelp(OptionSet p)
+        private static void ShowHelp(OptionSet p)
         {
             Console.WriteLine ("Usage: dotnet ImageMosaicGenerator.dll [OPTIONS]");
             Console.WriteLine ("Convert the 'image' to a mosaic using 'tiles'");
@@ -100,49 +117,59 @@ namespace ImageMosaicGenerator
         }
 
         /*
-         * This function goes through all of the images and calculates their averago color
+         * This function goes through all of the images and calculates their average color
          */
-        static void ProcessImages(int threadId, SharedIncrementalArray sharedArray, ThreadedStorage storage)
+        private static void ProcessTileImages(ThreadedStorage storage)
         {
-            int index = 0;
-            while (true)
+            while (storage.ImagePathsQueue.Count >= 1)
             {
                 // Get next image to process
-                string pathToImage = sharedArray.GetNext(out index);
+                string pathToImage;
+                lock (storage.ImagePathsQueue)
+                {
+                    pathToImage = storage.ImagePathsQueue.Dequeue();
+                }
 
                 // Verify an image got returned
-                if (pathToImage == null || index == -1)
+                if (pathToImage == null)
                     break;
                 
                 // Load the image
-                using (Bitmap bm = new Bitmap(pathToImage))
-                {
-                    // Get the average color and convert to CIELAB
-                    double[] imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(bm));
+                using var bm = new Bitmap(pathToImage);
+                
+                // Square the image so it can be used as a single pixel
+                using var squareBm = ImageProcessing.SquareImage(bm);
+                
+                // Get the average color and convert to CIELAB
+                var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(squareBm));
                     
-                    // Lock the array and save the result
-                    lock (storage.ImageColors)
-                    {
-                        // Save the color in a shared array
-                        storage.ImageColors[index] = imgCol;
-                    }
+                // Lock the array and save the result
+                lock (storage.TilesColors)
+                {
+                    // Save the color in a shared array
+                    storage.TilesColors.Add(new ImagePathColor(pathToImage, imgCol));
                 }
             }
         }
 
+        private static void ProcessImage(ThreadedStorage storage)
+        {
+            
+        }
+
         // This function simply waits until all threads have ended their task
-        static void WaitForThreadsToFinish(Thread[] threadList)
+        private static void WaitForThreadsToFinish(IReadOnlyList<Thread> threadList)
         {
             while (true)
             {
                 // Counter to keep track of how many threads are still alive
-                int totalAlive = 0;
+                var totalAlive = 0;
                 
                 // Loop through all threads and check if alive
-                for (int i = 0; i < threadList.Length; i++)
-                    if (threadList[i].IsAlive)
+                foreach (var t in threadList)
+                    if (t.IsAlive)
                         totalAlive++;
-                
+
                 // If none are alive, exit the loop
                 if (totalAlive == 0)
                     break;

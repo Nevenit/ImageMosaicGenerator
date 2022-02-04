@@ -16,20 +16,16 @@ namespace ImageMosaicGenerator
 
             destImage.SetResolution(image.Height, image.Width);
 
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            using var graphics = Graphics.FromImage(destImage);
+            graphics.CompositingMode = CompositingMode.SourceCopy;
+            graphics.CompositingQuality = CompositingQuality.HighQuality;
+            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            graphics.SmoothingMode = SmoothingMode.HighQuality;
+            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                using (var wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width,image.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
+            using var wrapMode = new ImageAttributes();
+            wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+            graphics.DrawImage(image, destRect, 0, 0, image.Width,image.Height, GraphicsUnit.Pixel, wrapMode);
 
             return destImage;
         }
@@ -37,31 +33,31 @@ namespace ImageMosaicGenerator
         // Credit to Philippe Leybaert, https://stackoverflow.com/questions/1068373/how-to-calculate-the-average-rgb-color-values-of-a-bitmap
         public static Color AverageImageColor(Bitmap img)
         {
-            BitmapData srcData = img.LockBits(
+            var srcData = img.LockBits(
                 new Rectangle(0, 0, img.Width, img.Height), 
                 ImageLockMode.ReadOnly, 
                 PixelFormat.Format32bppArgb);
 
-            int stride = srcData.Stride;
+            var stride = srcData.Stride;
 
-            IntPtr Scan0 = srcData.Scan0;
+            var Scan0 = srcData.Scan0;
 
-            long[] totals = new long[] {0,0,0};
+            var totals = new long[] {0,0,0};
 
-            int width = img.Width;
-            int height = img.Height;
+            var width = img.Width;
+            var height = img.Height;
 
             unsafe
             {
-                byte* p = (byte*) (void*) Scan0;
+                var p = (byte*) (void*) Scan0;
 
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (var x = 0; x < width; x++)
                     {
-                        for (int color = 0; color < 3; color++)
+                        for (var color = 0; color < 3; color++)
                         {
-                            int idx = (y*stride) + x*4 + color;
+                            var idx = (y*stride) + x*4 + color;
 
                             totals[color] += p[idx];
                         }
@@ -69,9 +65,9 @@ namespace ImageMosaicGenerator
                 }
             }
 
-            int avgB = (int)(totals[0] / (width*height));
-            int avgG = (int)(totals[1] / (width*height));
-            int avgR = (int)(totals[2] / (width*height));
+            var avgB = (int)(totals[0] / (width*height));
+            var avgG = (int)(totals[1] / (width*height));
+            var avgR = (int)(totals[2] / (width*height));
             
             img.UnlockBits(srcData);
             img.Dispose();
@@ -79,28 +75,36 @@ namespace ImageMosaicGenerator
             return Color.FromArgb(avgR, avgG, avgB);
         }
 
-        // This function is based on https://github.com/sumtype/CIEDE2000/blob/master/ciede2000.py
-        public double ciede2000(double[] colorA, double[] colorB)
+        public static Bitmap SquareImage(Bitmap img)
         {
-            double L1 = colorA[0];
-            double A1 = colorA[1];
-            double B1 = colorA[2];
-            double L2 = colorB[0];
-            double A2 = colorB[1];
-            double B2 = colorB[2];
+            int smallestSide = Math.Min(img.Width, img.Height);
+            Rectangle cropArea = new Rectangle((img.Width - smallestSide) / 2, (img.Height - smallestSide) / 2, smallestSide, smallestSide);
+            Bitmap croppedImage = new Bitmap(img);
+            return croppedImage.Clone(cropArea, croppedImage.PixelFormat);
+        }
 
-            double C1 = Math.Sqrt(Math.Pow(A1, 2.0) + Math.Pow(B1, 2.0));
-            double C2 = Math.Sqrt(Math.Pow(A2, 2.0) + Math.Pow(B2, 2.0));
+        // This function is based on https://github.com/sumtype/CIEDE2000/blob/master/ciede2000.py
+        public double Ciede2000(double[] colorA, double[] colorB)
+        {
+            var L1 = colorA[0];
+            var A1 = colorA[1];
+            var B1 = colorA[2];
+            var L2 = colorB[0];
+            var A2 = colorB[1];
+            var B2 = colorB[2];
 
-            double aC1C2 = (C1 + C2) / 2.0;
+            var C1 = Math.Sqrt(Math.Pow(A1, 2.0) + Math.Pow(B1, 2.0));
+            var C2 = Math.Sqrt(Math.Pow(A2, 2.0) + Math.Pow(B2, 2.0));
 
-            double G = 0.5 * (1.0 - Math.Sqrt(Math.Pow(aC1C2, 7.0) / (Math.Pow(aC1C2, 7.0) + Math.Pow(25.0, 7.0))));
+            var aC1C2 = (C1 + C2) / 2.0;
+
+            var G = 0.5 * (1.0 - Math.Sqrt(Math.Pow(aC1C2, 7.0) / (Math.Pow(aC1C2, 7.0) + Math.Pow(25.0, 7.0))));
             
-            double a1P = (1.0 + G) * A1;
-            double a2P = (1.0 + G) * A2;
+            var a1P = (1.0 + G) * A1;
+            var a2P = (1.0 + G) * A2;
 
-            double c1P = Math.Sqrt(Math.Pow(a1P, 2.0) + Math.Pow(B1, 2.0));
-            double c2P = Math.Sqrt(Math.Pow(a2P, 2.0) + Math.Pow(B2, 2.0));
+            var c1P = Math.Sqrt(Math.Pow(a1P, 2.0) + Math.Pow(B1, 2.0));
+            var c2P = Math.Sqrt(Math.Pow(a2P, 2.0) + Math.Pow(B2, 2.0));
             
             double h1P = 0;
             if (a1P == 0 && B1 == 0)
@@ -121,29 +125,27 @@ namespace ImageMosaicGenerator
                 else
                     h2P = Misc.ConvertRadiansToDegrees(Math.Atan2(B2, a2P)) + 360.0;
 
-            double dLP = L2 - L1;
-            double dCP = c2P - c1P;
+            var dLP = L2 - L1;
+            var dCP = c2P - c1P;
 
-            int dhC;
-            if (h2P - h1P > 180)
-                dhC = 1;
-            else if (h2P - h1P < -180)
-                dhC = 2;
-            else
-                dhC = 0;
+            var dhC = (h2P - h1P) switch
+            {
+                > 180 => 1,
+                < -180 => 2,
+                _ => 0
+            };
 
-            double dhP = 0;
-            if (dhC == 0)
-                dhP = h2P - h1P;
-            else if (dhC == 1)
-                dhP = h2P - h1P - 360.0;
-            else
-                dhP = h2P + 360 - h1P;
-            
-            double dHP = 2.0 * Math.Sqrt(c1P * c2P) * Math.Sin(Misc.ConvertDegreesToRadians(dhP / 2.0));
+            var dhP = dhC switch
+            {
+                0 => h2P - h1P,
+                1 => h2P - h1P - 360.0,
+                _ => h2P + 360 - h1P
+            };
 
-            double aL = (L1 + L2) / 2.0;
-            double aCP = (c1P + c2P) / 2.0;
+            var dHP = 2.0 * Math.Sqrt(c1P * c2P) * Math.Sin(Misc.ConvertDegreesToRadians(dhP / 2.0));
+
+            var aL = (L1 + L2) / 2.0;
+            var aCP = (c1P + c2P) / 2.0;
 
             int haC;
             if (c1P * c2P == 0)
@@ -155,34 +157,32 @@ namespace ImageMosaicGenerator
             else
                 haC = 2;
 
-            double haP = (h1P + h2P) / 2.0;
+            var haP = (h1P + h2P) / 2.0;
 
-            double aHP;
-            if (haC == 3)
-                aHP = h1P + h2P;
-            else if (haC == 0)
-                aHP = haP;
-            else if (haC == 1)
-                aHP = haP + 180;
-            else
-                aHP = haP - 180;
-            
-            double lPa50 = Math.Pow((aL - 50), 2.0);
-            double sL = 1.0 + (0.015 * lPa50 / Math.Sqrt(20.0 + lPa50));
-            double sC = 1.0 + 0.045 * aCP;
+            double aHP = haC switch
+            {
+                3 => h1P + h2P,
+                0 => haP,
+                1 => haP + 180,
+                _ => haP - 180
+            };
 
-            double T = 1.0 - 0.17 * Math.Cos(Misc.ConvertDegreesToRadians(aHP - 30.0)) + 0.24 * Math.Cos(Misc.ConvertDegreesToRadians(2.0 * aHP)) +
+            var lPa50 = Math.Pow((aL - 50), 2.0);
+            var sL = 1.0 + (0.015 * lPa50 / Math.Sqrt(20.0 + lPa50));
+            var sC = 1.0 + 0.045 * aCP;
+
+            var T = 1.0 - 0.17 * Math.Cos(Misc.ConvertDegreesToRadians(aHP - 30.0)) + 0.24 * Math.Cos(Misc.ConvertDegreesToRadians(2.0 * aHP)) +
                 0.32 * Math.Cos(Misc.ConvertDegreesToRadians(3.0 * aHP + 6.0)) - 0.2 * Math.Cos(Misc.ConvertDegreesToRadians(4.0 * aHP - 63.0));
                 
-            double sH = 1.0 + 0.015 * aCP * T;
-            double dTheta = 30.0 * Math.Exp(-1.0 * Math.Pow(((aHP - 275.0) / 25.0), 2.0));
-            double rC = 2.0 * Math.Sqrt(Math.Pow(aCP, 7.0) / (Math.Pow(aCP, 7.0) + Math.Pow(25.0, 7.0)));
-            double rT = -Math.Sin(Misc.ConvertDegreesToRadians(2.0 * dTheta)) * rC;
+            var sH = 1.0 + 0.015 * aCP * T;
+            var dTheta = 30.0 * Math.Exp(-1.0 * Math.Pow(((aHP - 275.0) / 25.0), 2.0));
+            var rC = 2.0 * Math.Sqrt(Math.Pow(aCP, 7.0) / (Math.Pow(aCP, 7.0) + Math.Pow(25.0, 7.0)));
+            var rT = -Math.Sin(Misc.ConvertDegreesToRadians(2.0 * dTheta)) * rC;
 
-            double fL = dLP / sL / 1.0;
-            double fC = dCP / sC / 1.0;
-            double fH = dHP / sH / 1.0;
-            double dE2000 = Math.Sqrt(Math.Pow(fL, 2.0) + Math.Pow(fC, 2.0) + Math.Pow(fH, 2.0) + rT * fC * fH);
+            var fL = dLP / sL / 1.0;
+            var fC = dCP / sC / 1.0;
+            var fH = dHP / sH / 1.0;
+            var dE2000 = Math.Sqrt(Math.Pow(fL, 2.0) + Math.Pow(fC, 2.0) + Math.Pow(fH, 2.0) + rT * fC * fH);
             return dE2000;
         }
     }
