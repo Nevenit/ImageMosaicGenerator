@@ -22,6 +22,7 @@ namespace ImageMosaicGenerator
             var imagePath = "";
             var tilesPath = "";
             var threadCount = 0;
+            var tileSize = 0;
             
             
             // Define arguments
@@ -33,6 +34,10 @@ namespace ImageMosaicGenerator
                 {
                     "t|tiles=", "Path to the folder containing tile images",
                     v => tilesPath = v 
+                },
+                {
+                    "s|tileSize=", "The size of individual tiles",
+                    (int v) => tileSize = v
                 },
                 {
                     "c|threads=", "The number of threads to use",
@@ -71,7 +76,7 @@ namespace ImageMosaicGenerator
             var image = new Bitmap(imagePath);
 
             // Define arrays objects to be shared between classes
-            var storage = new ThreadedStorage(tileImages, image);
+            var storage = new ThreadedStorage(tileImages, image, tileSize);
             
             var threadList = new Thread[threadCount];
             
@@ -139,6 +144,8 @@ namespace ImageMosaicGenerator
                 
                 // Square the image so it can be used as a single pixel
                 using var squareBm = ImageProcessing.SquareImage(bm);
+                
+                // Resize image
                 
                 // Get the average color and convert to CIELAB
                 var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(squareBm));
