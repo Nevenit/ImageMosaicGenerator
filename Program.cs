@@ -21,9 +21,9 @@ namespace ImageMosaicGenerator
             var showHelp = false;
             var imagePath = "";
             var tilesPath = "";
-            var threadCount = 0;
             var tileSize = 0;
-            
+            var imageSize = 0;
+            var threadCount = 0;
             
             // Define arguments
             var p = new OptionSet () {
@@ -38,6 +38,10 @@ namespace ImageMosaicGenerator
                 {
                     "s|tileSize=", "The size of individual tiles",
                     (int v) => tileSize = v
+                },
+                {
+                    "w|imageSize=", "The size of the image in tiles",
+                    (int v) => imageSize = v
                 },
                 {
                     "c|threads=", "The number of threads to use",
@@ -69,7 +73,15 @@ namespace ImageMosaicGenerator
                 ShowHelp(p);
                 return;
             }
-            
+
+            // Calculate image size after scaling it down to tiles
+            using (Bitmap bm = new Bitmap(imagePath))
+            {
+                int smallestSide = Math.Min(bm.Width, bm.Height);
+                int[] tiledImageSize = new int[2] { (int)Math.Round((float)bm.Width / smallestSide * imageSize), (int)Math.Round((float)bm.Height / smallestSide * imageSize) };
+            }
+                
+
             // Find all image files 
             var ext = new List<string> { ".jpg", ".png" };
             var tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
@@ -90,7 +102,8 @@ namespace ImageMosaicGenerator
             WaitForThreadsToFinish(threadList);
 
             // Create the color queue to be used by the threads
-            storage.GenereteColorQueue();
+            // This stores the Image as a color array in a queue used for multi threading
+            //private Queue<Color> ImageColorQueue;
 
             // override the old thread array with an empty one
             threadList = new Thread[threadCount];
@@ -105,9 +118,6 @@ namespace ImageMosaicGenerator
 
             // Wait for the threads to finish
             WaitForThreadsToFinish(threadList);
-            
-            
-            
         }
 
         /*
@@ -172,7 +182,7 @@ namespace ImageMosaicGenerator
         private static void ProcessImage(ThreadedStorage storage)
         {
             using var img = new Bitmap(storage.ImagePath);
-            //using var resizedImg = ImageProcessing.ResizeImage(img, )
+            //using var resizedImg = ImageProcessing.ResizeImage(img, imageSize);
         }
 
         // This function simply waits until all threads have ended their task

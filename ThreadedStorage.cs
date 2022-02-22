@@ -18,9 +18,6 @@ namespace ImageMosaicGenerator
         
         //This just stores the image
         public string ImagePath;
-        
-        // This stores the Image as a color array in a queue used for multi threading
-        private Queue<Color> ImageColorQueue;
 
         public int TileSize;
 
@@ -30,12 +27,6 @@ namespace ImageMosaicGenerator
             ImagePathsQueue = new Queue<string>(TilePaths);
             ImagePath = image;
             TileSize = tileSize;
-        }
-
-        public void GenereteColorQueue()
-        {
-            using var lodedImg = new Bitmap(ImagePath);
-            ImageColorQueue = new Queue<Color>(Misc.BitmapToColorList(lodedImg));
         }
     }
 }
