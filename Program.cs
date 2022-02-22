@@ -73,11 +73,9 @@ namespace ImageMosaicGenerator
             // Find all image files 
             var ext = new List<string> { ".jpg", ".png" };
             var tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
-            var image = new Bitmap(imagePath);
 
             // Define arrays objects to be shared between classes
-            var storage = new ThreadedStorage(tileImages, image, tileSize);
-            
+            var storage = new ThreadedStorage(tileImages, imagePath, tileSize);
             var threadList = new Thread[threadCount];
             
             // Start the threads to process images
@@ -90,7 +88,10 @@ namespace ImageMosaicGenerator
 
             // Wait for the threads to finish
             WaitForThreadsToFinish(threadList);
-            
+
+            // Create the color queue to be used by the threads
+            storage.GenereteColorQueue();
+
             // override the old thread array with an empty one
             threadList = new Thread[threadCount];
             
@@ -138,30 +139,40 @@ namespace ImageMosaicGenerator
                 // Verify an image got returned
                 if (pathToImage == null)
                     break;
-                
-                // Load the image
-                using var bm = new Bitmap(pathToImage);
-                
-                // Square the image so it can be used as a single pixel
-                using var squareBm = ImageProcessing.SquareImage(bm);
-                
-                // Resize image
-                
-                // Get the average color and convert to CIELAB
-                var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(squareBm));
-                    
-                // Lock the array and save the result
-                lock (storage.TilesColors)
+
+                // Run the code in a try loop in case something goes wrong
+                try
                 {
-                    // Save the color in a shared array
-                    storage.TilesColors.Add(new ImagePathColor(pathToImage, imgCol));
+                    // Load the image
+                    using var bm = new Bitmap(pathToImage);
+
+                    // Square the image so it can be used as a single pixel
+                    using var squareBm = ImageProcessing.SquareImage(bm);
+
+                    // Resize image
+                    using var resizedBm = ImageProcessing.ResizeImage(bm, storage.TileSize, storage.TileSize);
+
+                    // Get the average color and convert to CIELAB
+                    var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(resizedBm));
+
+                    // Lock the array and save the result
+                    lock (storage.TilesColors)
+                    {
+                        // Save the color in a shared array
+                        storage.TilesColors.Add(new ImagePathColor(pathToImage, imgCol));
+                    }
+                }
+                catch
+                {
+                    continue;
                 }
             }
         }
 
         private static void ProcessImage(ThreadedStorage storage)
         {
-            
+            using var img = new Bitmap(storage.ImagePath);
+            //using var resizedImg = ImageProcessing.ResizeImage(img, )
         }
 
         // This function simply waits until all threads have ended their task

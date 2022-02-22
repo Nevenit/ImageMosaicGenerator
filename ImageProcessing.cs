@@ -79,7 +79,7 @@ namespace ImageMosaicGenerator
         {
             int smallestSide = Math.Min(img.Width, img.Height);
             Rectangle cropArea = new Rectangle((img.Width - smallestSide) / 2, (img.Height - smallestSide) / 2, smallestSide, smallestSide);
-            Bitmap croppedImage = new Bitmap(img);
+            using Bitmap croppedImage = new Bitmap(img);
             return croppedImage.Clone(cropArea, croppedImage.PixelFormat);
         }
 
