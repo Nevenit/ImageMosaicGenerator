@@ -1,2 +1,2 @@
 # ImageMosaicGenerator
-A simple image mosaic genetarot program
+A simple image mosaic genetaror program
