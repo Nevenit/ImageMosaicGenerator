@@ -18,7 +18,7 @@ namespace ImageMosaicGenerator
             return (radians);
         }
 
-        public static Color[] BitmapToColorList(Bitmap img)
+        public static PixelColorAndPosition[] BitmapToColorList(Bitmap img)
         {
             var srcData = img.LockBits(
                 new Rectangle(0, 0, img.Width, img.Height), 
@@ -30,7 +30,8 @@ namespace ImageMosaicGenerator
             var Scan0 = srcData.Scan0;
 
             var fullColor = new int[] {0,0,0};
-            var outColor = new Color[img.Width * img.Height];
+            PixelColorAndPosition[] output = new PixelColorAndPosition[img.Width * img.Height];
+            //var outColor = new Color[img.Width * img.Height];
 
             var width = img.Width;
             var height = img.Height;
@@ -49,12 +50,13 @@ namespace ImageMosaicGenerator
                             fullColor[color] = p[idx];
                         }
 
-                        outColor[img.Width * y + x] = Color.FromArgb(fullColor[0], fullColor[1], fullColor[2]);
+                        output[img.Width * y + x] = new PixelColorAndPosition(ColorConversion.RGBtoCIELAB(Color.FromArgb(fullColor[0], fullColor[1], fullColor[2])), new int[2] { x, y });
+                        //outColor[img.Width * y + x] = Color.FromArgb(fullColor[0], fullColor[1], fullColor[2]);
                     }
                 }
             }
 
-            return outColor;
+            return output;
         }
     }
 }

@@ -74,14 +74,6 @@ namespace ImageMosaicGenerator
                 return;
             }
 
-            // Calculate image size after scaling it down to tiles
-            using (Bitmap bm = new Bitmap(imagePath))
-            {
-                int smallestSide = Math.Min(bm.Width, bm.Height);
-                int[] tiledImageSize = new int[2] { (int)Math.Round((float)bm.Width / smallestSide * imageSize), (int)Math.Round((float)bm.Height / smallestSide * imageSize) };
-            }
-                
-
             // Find all image files 
             var ext = new List<string> { ".jpg", ".png" };
             var tileImages = Directory.GetFiles(tilesPath, "*.*", SearchOption.AllDirectories).Where(s => ext.Contains(Path.GetExtension(s))).ToArray();
@@ -101,9 +93,24 @@ namespace ImageMosaicGenerator
             // Wait for the threads to finish
             WaitForThreadsToFinish(threadList);
 
-            // Create the color queue to be used by the threads
-            // This stores the Image as a color array in a queue used for multi threading
-            //private Queue<Color> ImageColorQueue;
+            // Define the color queue
+            Queue<PixelColorAndPosition> ImageColorQueue;
+
+            // Calculate image size after scaling it down to tiles
+            using (Bitmap bm = new Bitmap(imagePath))
+            {
+                int smallestSide = Math.Min(bm.Width, bm.Height);
+                int[] tiledImageSize = new int[2] { (int)Math.Round((float)bm.Width / smallestSide * imageSize), (int)Math.Round((float)bm.Height / smallestSide * imageSize) };
+
+                // Create the color queue to be used by the threads
+                // This stores the Image as a color array in a queue used for multi threading
+                using (Bitmap sBm = ImageProcessing.ResizeImage(bm, tiledImageSize[0], tiledImageSize[1]))
+                {
+                    ImageColorQueue = new Queue<PixelColorAndPosition>(Misc.BitmapToColorList(sBm));
+                }
+            }
+
+
 
             // override the old thread array with an empty one
             threadList = new Thread[threadCount];
@@ -112,7 +119,7 @@ namespace ImageMosaicGenerator
             // This picks the image for each pixel of the image
             for (var i = 0; i < threadCount; i++)
             {
-                threadList[i] = new Thread(() => ProcessImage(storage));
+                threadList[i] = new Thread(() => ProcessImage(storage, ref ImageColorQueue));
                 threadList[i].Start();
             }
 
@@ -137,7 +144,7 @@ namespace ImageMosaicGenerator
          */
         private static void ProcessTileImages(ThreadedStorage storage)
         {
-            while (storage.ImagePathsQueue.Count >= 1)
+            while (storage.ImagePathsQueue.Count > 0)
             {
                 // Get next image to process
                 string pathToImage;
@@ -179,10 +186,19 @@ namespace ImageMosaicGenerator
             }
         }
 
-        private static void ProcessImage(ThreadedStorage storage)
+        private static void ProcessImage(ThreadedStorage storage, ref Queue<PixelColorAndPosition> ImageColorQueue)
         {
-            using var img = new Bitmap(storage.ImagePath);
-            //using var resizedImg = ImageProcessing.ResizeImage(img, imageSize);
+            while (ImageColorQueue.Count > 0)
+            {
+                // Get next pixel to process
+                PixelColorAndPosition pixelColor;
+                lock (ImageColorQueue)
+                {
+                    pixelColor = ImageColorQueue.Dequeue();
+                }
+
+
+            }
         }
 
         // This function simply waits until all threads have ended their task
