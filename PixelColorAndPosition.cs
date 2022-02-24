@@ -9,13 +9,13 @@ namespace ImageMosaicGenerator
 {
     public class PixelColorAndPosition
     {
-        public double[] pixelColor;
-        public int[] pos;
+        public double[] color;
+        public int[] position;
 
         public PixelColorAndPosition(double[] _pixelColor, int[] _pos)
         {
-            pixelColor = _pixelColor;
-            pos = _pos;
+            color = _pixelColor;
+            position = _pos;
         }
     }
 }

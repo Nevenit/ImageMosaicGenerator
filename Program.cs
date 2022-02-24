@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Threading;
+using System.Threading.Tasks;
 using NDesk.Options;
 
 namespace ImageMosaicGenerator
@@ -80,27 +81,38 @@ namespace ImageMosaicGenerator
 
             // Define arrays objects to be shared between classes
             var storage = new ThreadedStorage(tileImages, imagePath, tileSize);
-            var threadList = new Thread[threadCount];
-            
+            var threadList = new Task[threadCount];
+
+            Console.WriteLine("Pricess Tiles");
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             // Start the threads to process images
             // This calculates the average color foe each pixel
             for (var i = 0; i < threadCount; i++)
             {
-                threadList[i] = new Thread(() => ProcessTileImages(storage));
-                threadList[i].Start();
+                threadList[i] = Task.Factory.StartNew(() => ProcessTileImages(storage));
             }
 
             // Wait for the threads to finish
-            WaitForThreadsToFinish(threadList);
+            Task.WaitAll(threadList);
+
+            stopwatch.Stop();
+            Console.WriteLine("Elapsed time: " + stopwatch.ElapsedMilliseconds / 1000);
+
+            stopwatch.Restart();
+            Console.WriteLine("Pricess Image");
 
             // Define the color queue
             Queue<PixelColorAndPosition> ImageColorQueue;
+            int[] tiledImageSize;
 
             // Calculate image size after scaling it down to tiles
             using (Bitmap bm = new Bitmap(imagePath))
             {
                 int smallestSide = Math.Min(bm.Width, bm.Height);
-                int[] tiledImageSize = new int[2] { (int)Math.Round((float)bm.Width / smallestSide * imageSize), (int)Math.Round((float)bm.Height / smallestSide * imageSize) };
+
+                tiledImageSize = new int[2] { (int)Math.Round((float)bm.Width / smallestSide * imageSize), (int)Math.Round((float)bm.Height / smallestSide * imageSize) };
 
                 // Create the color queue to be used by the threads
                 // This stores the Image as a color array in a queue used for multi threading
@@ -110,21 +122,32 @@ namespace ImageMosaicGenerator
                 }
             }
 
+            Bitmap finalImage = new Bitmap(tiledImageSize[0] * tileSize, tiledImageSize[1] * tileSize);
 
-
-            // override the old thread array with an empty one
-            threadList = new Thread[threadCount];
-            
-            // Start the threads to process the image
-            // This picks the image for each pixel of the image
-            for (var i = 0; i < threadCount; i++)
+            using (Graphics g = Graphics.FromImage(finalImage))
             {
-                threadList[i] = new Thread(() => ProcessImage(storage, ref ImageColorQueue));
-                threadList[i].Start();
-            }
+                g.CompositingMode = CompositingMode.SourceCopy;
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.SmoothingMode = SmoothingMode.None;
+                g.CompositingQuality = CompositingQuality.HighSpeed;
+                g.PixelOffsetMode = PixelOffsetMode.HighSpeed;
 
-            // Wait for the threads to finish
-            WaitForThreadsToFinish(threadList);
+                // override the old thread array with an empty one
+                threadList = new Task[threadCount];
+
+                // Start the threads to process the image
+                // This picks the image for each pixel of the image
+                for (var i = 0; i < threadCount; i++)
+                {
+                    threadList[i] = Task.Factory.StartNew(() => ProcessImage(storage, ref ImageColorQueue, g));
+                }
+
+                // Wait for the threads to finish
+                Task.WaitAll(threadList);
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Elapsed time: " + stopwatch.ElapsedMilliseconds / 1000);
+            finalImage.Save("yeet.png");
         }
 
         /*
@@ -167,10 +190,10 @@ namespace ImageMosaicGenerator
                     using var squareBm = ImageProcessing.SquareImage(bm);
 
                     // Resize image
-                    using var resizedBm = ImageProcessing.ResizeImage(bm, storage.TileSize, storage.TileSize);
+                    //using var resizedBm = ImageProcessing.ResizeImage(bm, storage.TileSize, storage.TileSize);
 
                     // Get the average color and convert to CIELAB
-                    var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(resizedBm));
+                    var imgCol = ColorConversion.RGBtoCIELAB(ImageProcessing.AverageImageColor(squareBm));
 
                     // Lock the array and save the result
                     lock (storage.TilesColors)
@@ -186,18 +209,30 @@ namespace ImageMosaicGenerator
             }
         }
 
-        private static void ProcessImage(ThreadedStorage storage, ref Queue<PixelColorAndPosition> ImageColorQueue)
+        private static void ProcessImage(ThreadedStorage storage, ref Queue<PixelColorAndPosition> ImageColorQueue, Graphics g)
         {
+            ImagePathColor[] localList = storage.TilesColors.ToArray();
             while (ImageColorQueue.Count > 0)
             {
                 // Get next pixel to process
-                PixelColorAndPosition pixelColor;
+                PixelColorAndPosition pixel;
                 lock (ImageColorQueue)
                 {
-                    pixelColor = ImageColorQueue.Dequeue();
+                    pixel = ImageColorQueue.Dequeue();
                 }
 
+                // Get closest image
+                ImagePathColor pixelImage = Misc.FindClosesColor(pixel.color, localList);
 
+                // Draw image
+                using Bitmap bm = new Bitmap(pixelImage.ImagePath);
+                using Bitmap sBm = ImageProcessing.SquareImage(bm);
+                using Bitmap smallSBm = ImageProcessing.ResizeImage(sBm, storage.TileSize, storage.TileSize);
+                lock (g)
+                {
+                    g.DrawImage(smallSBm, pixel.position[0] * storage.TileSize, pixel.position[1] * storage.TileSize, storage.TileSize, storage.TileSize);
+                    //g.FillRectangle(new SolidBrush(ColorConversion.CIELABtoRGB(pixel.color)), pixel.position[0] * storage.TileSize, pixel.position[1] * storage.TileSize, storage.TileSize, storage.TileSize);
+                }
             }
         }
 

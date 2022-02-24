@@ -84,7 +84,7 @@ namespace ImageMosaicGenerator
         }
 
         // This function is based on https://github.com/sumtype/CIEDE2000/blob/master/ciede2000.py
-        public double Ciede2000(double[] colorA, double[] colorB)
+        public static double ColorDifference(double[] colorA, double[] colorB)
         {
             var L1 = colorA[0];
             var A1 = colorA[1];

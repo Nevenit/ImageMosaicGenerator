@@ -50,9 +50,29 @@ namespace ImageMosaicGenerator
                             fullColor[color] = p[idx];
                         }
 
-                        output[img.Width * y + x] = new PixelColorAndPosition(ColorConversion.RGBtoCIELAB(Color.FromArgb(fullColor[0], fullColor[1], fullColor[2])), new int[2] { x, y });
-                        //outColor[img.Width * y + x] = Color.FromArgb(fullColor[0], fullColor[1], fullColor[2]);
+                        output[img.Width * y + x] = new PixelColorAndPosition(ColorConversion.RGBtoCIELAB(Color.FromArgb(fullColor[2], fullColor[1], fullColor[0])), new int[2] { x, y });
+                        //outColor[img.Width * y + x] = Color.FromArgb(fullColor[2], fullColor[1], fullColor[0]);
                     }
+                }
+            }
+
+            return output;
+        }
+
+        public static ImagePathColor FindClosesColor(double[] originalColor, ImagePathColor[] possibleColors)
+        {
+            // Define the variables with a starting value just so we can compare against them
+            ImagePathColor output = possibleColors[0];
+            double lastDifference = ImageProcessing.ColorDifference(originalColor, possibleColors[0].ImageColor);
+
+            foreach (ImagePathColor possibleColor in possibleColors)
+            {
+                double colorDifference = ImageProcessing.ColorDifference(originalColor, possibleColor.ImageColor);
+
+                if (colorDifference < lastDifference)
+                {
+                    output = possibleColor;
+                    lastDifference = colorDifference;
                 }
             }
 

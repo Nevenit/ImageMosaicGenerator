@@ -15,7 +15,7 @@ namespace ImageMosaicGenerator
         
         // This stores both the path to the tile images and its colors
         public List<ImagePathColor> TilesColors = new List<ImagePathColor>();
-        
+
         //This just stores the image
         public string ImagePath;
 
