@@ -83,6 +83,18 @@ namespace ImageMosaicGenerator
             return croppedImage.Clone(cropArea, croppedImage.PixelFormat);
         }
 
+        public static Bitmap SquareAndResizeImage(Bitmap img, int size)
+        {
+            int smallestSide = Math.Min(img.Width, img.Height);
+
+            Bitmap nb = new Bitmap(size, size);
+            using (Graphics g = Graphics.FromImage(nb))
+            {
+                g.DrawImage(img, -((img.Width / (float)smallestSide - 1.0f) * size) / 2.0f, -((img.Height / (float)smallestSide - 1.0f) * size) / 2.0f, img.Width / (float)smallestSide * size, img.Height / (float)smallestSide * size);
+                return nb;
+            }
+        }
+
         // This function is based on https://github.com/sumtype/CIEDE2000/blob/master/ciede2000.py
         public static double ColorDifference(double[] colorA, double[] colorB)
         {

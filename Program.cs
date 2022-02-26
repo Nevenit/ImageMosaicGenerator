@@ -187,7 +187,11 @@ namespace ImageMosaicGenerator
                     using var bm = new Bitmap(pathToImage);
 
                     // Square the image so it can be used as a single pixel
-                    using var squareBm = ImageProcessing.SquareImage(bm);
+                    using var squareBm = ImageProcessing.SquareAndResizeImage(bm, storage.TileSize);
+
+                    // This will throw an exception when there is something wrong with the bitmap
+                    // There was an issue where SquareAndResizeImage() wouldnt throw an error and the return variable was corrupted
+                    int test = squareBm.Width;
 
                     // Resize image
                     //using var resizedBm = ImageProcessing.ResizeImage(bm, storage.TileSize, storage.TileSize);
@@ -202,8 +206,9 @@ namespace ImageMosaicGenerator
                         storage.TilesColors.Add(new ImagePathColor(pathToImage, imgCol));
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    Console.WriteLine(storage.ImagePathsQueue.Count + ". " + e.Message);
                     continue;
                 }
             }
