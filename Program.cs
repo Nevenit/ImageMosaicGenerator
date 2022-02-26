@@ -240,26 +240,5 @@ namespace ImageMosaicGenerator
                 }
             }
         }
-
-        // This function simply waits until all threads have ended their task
-        private static void WaitForThreadsToFinish(IReadOnlyList<Thread> threadList)
-        {
-            while (true)
-            {
-                // Counter to keep track of how many threads are still alive
-                var totalAlive = 0;
-                
-                // Loop through all threads and check if alive
-                foreach (var t in threadList)
-                    if (t.IsAlive)
-                        totalAlive++;
-
-                // If none are alive, exit the loop
-                if (totalAlive == 0)
-                    break;
-                
-                Thread.Sleep(10);
-            }
-        }
     }
 }

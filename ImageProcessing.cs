@@ -90,6 +90,7 @@ namespace ImageMosaicGenerator
             Bitmap nb = new Bitmap(size, size);
             using (Graphics g = Graphics.FromImage(nb))
             {
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
                 g.DrawImage(img, -((img.Width / (float)smallestSide - 1.0f) * size) / 2.0f, -((img.Height / (float)smallestSide - 1.0f) * size) / 2.0f, img.Width / (float)smallestSide * size, img.Height / (float)smallestSide * size);
                 return nb;
             }
